@@ -1,0 +1,197 @@
+#include "lottery.h"
+#include "lotcontrol.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
+
+void admin_login(Ulink* head)
+//管理员登录(顺便传入有数据的链表)
+{
+	if(head == NULL)
+	{
+		printf("头节点为空!\n");
+		return;
+	}
+
+	char admin_name[20] = "";
+	char admin_pass[20] = "";
+	printf("请输入管理员账户名:");
+	scanf("%s",admin_name);
+	printf("请输入管理员密码:");
+	scanf("%s",admin_pass);
+	if(0 == strcmp(admin_name,"admin") && 0 == strcmp(admin_pass,"admin"))
+	{
+		printf("管理员登录成功!\n");
+		admin_menu_control(head);
+		return;
+	}
+	printf("管理员账户密码错误,登录失败!\n");
+	return;
+}
+
+void user_login(Ulink* head)
+//用户登录(顺便传入有数据的链表)
+{
+        if(head == NULL)
+        {
+                printf("头节点为空!\n");
+                return;
+        }
+
+        char user_name[20] = "";
+        char user_pass[20] = "";
+        printf("请输入账户名:");
+        scanf("%s",user_name);
+        	
+	//找到当前节点的前一个节点
+	Ulink* pre=select_front_node(head,user_name);
+	if(pre==NULL)	
+	{
+		printf("不存在该用户！\n");
+		return;
+	}
+	else
+	
+	printf("自己人！通关密码：");
+	//printf("请输入密码:");
+        scanf("%s",user_pass);
+
+       	if( strcmp(user_pass,pre->next->data.password)==0 )
+        {
+                	printf("您已成功登录!\n");
+                	user_menu_control(head,pre);
+                	return;	//成功登录之后，进行完用户操作，可以返回主界面了
+	}
+	//--------------------------------------//
+        printf("账户或者密码错误,登录失败!\n");
+        return;
+	
+}
+
+
+
+void user_regist(Ulink* head)
+//用户注册(顺便传入有数据的链表)，（需要自动生成ID号，需要输入自己的姓名和密码）
+{
+        if(head == NULL)
+        {
+                printf("头节点为空!\n");
+                return;
+        }
+	
+	User data;//定义结构体变量，接受输入的值。
+	memset(&data,0,sizeof(User));
+
+        printf("请输入申请的账户名:");
+        scanf("%s",data.name);
+	
+	Ulink* pre = select_front_node(head,data.name); //传入数据链，传入需要查找的用户名
+        if(pre != NULL)  //如果找到，会返回同名节点的前一个节点的地址。
+        {
+                printf("该用户名已经存在!\n");
+                return;  
+        }
+	
+	printf("请输入初始密码:");
+        scanf("%s",data.password);	
+
+
+	insert_after(head,data);    //插入新注册的数据节点到链表最后
+        printf("注册成功!\n");
+	
+	return;
+}
+
+
+void print_all_user(Ulink* head)
+{
+	if(head==NULL)
+	{
+		printf("（显示全部用户时）发现头结点为空！\n");
+		return ;
+	}
+
+	head=head->next;//从第一个节点开始
+	int i=1;
+	while(head!=NULL)
+	{
+		printf("%d.姓名：%s\n",i,head->data.name);
+		head=head->next;
+		i++;
+	}
+	stop();
+
+}
+
+
+//传入数据链和需要查找的账户名称,
+//查找函数，返回当前节点前一个节点
+Ulink* select_front_node(Ulink* head,char* name)
+{
+	if(head==NULL)
+	{
+		printf("（向前检索时）发现头结点为空!\n");
+		return NULL;
+	}
+	
+	Ulink* pre = head;//双指针，pre 始终在head前一个
+
+	head=head->next; //从第一个有效数据节点开始，（此时pre成了头指针）
+	while(head!=NULL)
+	{
+		if(strcmp(head->data.name,name)==0)//找到同名的节点head
+		{
+			return pre;  //返回上一个节点，方便对当前节点进行操作。
+		}
+		pre=head;
+		head=head->next;
+
+	}
+	return NULL;   //未找到，返回空
+	
+}
+Ulink* create_node(User data)
+{
+	Ulink* newnode=(Ulink*)calloc(1,sizeof(Ulink));//calloc不需要初始化
+	newnode->data=data;//数据域赋值
+	newnode->next=NULL;//地址域置空
+	return newnode;
+}
+
+void insert_after(Ulink* head,User data)    //插入新注册的数据节点到链表最后
+{
+	if(head==NULL)
+	{
+		printf("（后插数据时）发现头结点为空\n");
+	}
+
+	Ulink* newnode=create_node(data);
+	
+	//找到尾节点（尾节点不为空，它所指向的下一个为空）
+	while(head->next!=NULL)
+	//当发现节点的下一个为空，则结束循环，当前即为尾节点
+	{
+		head=head->next;	
+	}
+	head->next=newnode;
+}
+
+
+void print_personal_info(Ulink* pre)
+{
+
+	printf("--> %d\t%s\n",pre->next->data.id,pre->next->data.name);
+	printf("----------------------------------------------\n");
+
+	stop();
+}
+
+void stop()
+{
+	printf("--- 按任意键退出！---\n");
+	getchar();
+}
+
+
